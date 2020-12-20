@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<!--
+/**
+ * @package documentation
+ * @copyright Copyright 2003-2013 Zen Cart Development Team
+ * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
+ * @version GIT: $Id: Author: DrByte  Mon Sep 24 14:38:59 2012 -0400 Modified in v1.5.2 $
+ */
+//-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+<!--
+body, table{ font-family:Verdana, Arial, Helvetica, sans-serif; font-size:14px; }
+fieldset.intro {border-color:#C96E29; }
+.intro{background-color:#EEEEEE ; border-color:5778ce; font-size:12px; }
+.plainbox, div.callout {border: 1px dashed; border-color:#C96E29; margin:5 40 5 40; background-color: #d7e0f2; }
+.heading {background-color:#5778CE; font-weight:bold; font-size:14px;	width: 100%; }
+.title1 {color:#C96E29; font-weight:bold; font-size:22px; }
+.title2 {color:#C96E29; font-weight:bold; font-size:13px; }
+.small {font-size:10px ;}
+.error {color:#FF0000; }
+.filename {font-family: mono, "Courier New", Courier ; font-size:14px; color: #c96e29;}
+.pseudolink {text-decoration:underline; color:#5778CE;}
+h1.intro { color: #ffffff; border:1px solid #aca893; background-color: #c96e29;  font-size: 22px;   padding: 4px;}
+h1 { color: #ffffff;    border:1px solid #aca893;   background-color: #5778ce;   font-size: 20px;   padding: 4px;}
+h2 { color: #c96e29; 	font-size: 18px;}
+h3 { color: #5778ce;	font-size: 16px; margin-bottom:0px;}
+h4 { color: #c96e29;	font-size: 14px;}
+.center {text-align: center}
+.style1 {font-size: 10}
+
+-->
+</style>
+<title>Zen Cart 中文版网站安全指南</title>
+<meta http-equiv="imagetoolbar" content="no">
+<meta name="author" content="The Zen Cart&reg; Team">
+<meta name="robots" content="noindex, nofollow">
+</head>
+<body>
+
+<fieldset class="intro">
+<h1 class="intro center">Zen Cart中文版网站安全</h1>
+<p class="style1">Zen Cart&trade;软件使用的是GNU通用公共许可协议，您可以免费使用、修改 Zen Cart&trade; 软件。<br>
+<br>
+虽然该软件是免费的，但是欢迎您每次下载新版本前捐款，以帮助我们继续软件开发、升级，和维护免费论坛。
+<br>
+<br>
+捐款网址：
+<a href="http://www.zen-cart.com/donate" target="_blank">Zen Cart&trade; 团队</a>
+<br>
+<br>
+感谢您的支持<br>
+<em>Zen Cart China</em>
+</p><br>
+<br>
+
+<p class="small center">
+Zen Cart&trade; 源自: Copyright 2003 osCommerce<br>
+该软件希望提供有用的功能，但[不做保证]，也不保证[适用于特定用途]<br>
+该软件受限于GNU通用公共许可协议<br><br>
+</p>
+</fieldset>
+<br>
+<fieldset>
+<p class="center"><img src="osi-certified-120x100.png" alt="O S I Certified"><br>
+该软件通过OSI开源软件认证。<br>
+OSI Certified是开源动力的认证标志。
+</p>
+</fieldset>
+<br>
+
+<fieldset>
+<h1 class="center">ZEN CART中文版安全建店的方法 </h1>
+<h4>下面是强化Zen Cart网店安全的几个步骤:  </h4>
+<h1>1. 安装后从服务器上删除多余的目录 </h1>
+<p>删除以下目录 (以及目录中的所有文件), 以降低安全风险:<ul><li>/docs</li><li>/extras</li><li>/zc_install</li>
+<li>/install.txt (这个文件也可以删除)</li></ul>
+<p>可选: 另外，*如果* 您不打算使用下载类或音乐相关产品，*也可以* 删除这些目录:<ul><li>/download</li><li>/media</li><li>/pub</li></ul>(需要在管理页面->商店设置->属性设置->启用下载，设置为 False 来关闭没有下载目录的提示信息)</p>
+
+<h1>2. 修改 &quot;/admin&quot; 目录名 </h1>
+<p>修改 &quot;admin&quot; 目录名，用一个很难猜测到的名字。</p>
+<p><em>(在进行下面的修改前，请备份文件和数据库。)</em></p>
+<p>A- 通过FTP软件或者主机商的文件管理工具找到 Zen Cart<span class="filename"> /admin/</span> 目录。<br>
+修改目录名。</p>
+<p>B - 使用上面的新目录名来访问管理页面。例如，原来是 <em>http://www.example.com/admin/</em> 现在改为 <em>http://www.example.com/NeW_NamE4u/</em>。</p>
+
+<h1>3. 使用 SMTPAUTH 或 SMTP 作为邮件发送方式，而不是普通的 "PHP" 设置。</h1>
+<p>进入管理页面->商店设置->电子邮件选项，修改邮件发送方式为 SMTPAUTH，然后输入屏幕下面所有的 SMTP 相关参数。</p>
+<p>这不仅有助于防止邮件进入垃圾箱，同时避免从管理页面发送邮件时泄漏管理目录名。</p>
+
+<h1>4. 设置configure.php文件为只读</h1>
+<p>将两个 configure.php 文件设置为只读很重要。<br>
+通常就是设置为&quot;644&quot;，有时是&quot;444&quot;。</p>
+<p>配置文件 configure.php 位于:<br>
+/&lt;商店目录&gt;/includes/configure.php<br>
+/&lt;商店目录&gt;/renamed_admin/includes/configure.php </p>
+<p>有时通过FTP设置文件为只读不起作用。尽管看起来已经设置为只读了，实际上没有。通过查看商店首页的顶部是否有警告信息来确定设置是否生效。如果还是显示警告信息，请通过主机商提供的"文件管理"功能来修改。</p>
+<p>如果您用的是Windows服务器，只要将文件设置 <em>只读</em> 给 <em>所有人</em>，如果在IIS下，是<strong>IUSR_xxxxx</strong>用户，在Apache下，是<em>apache user</em>帐号。</p>
+
+<h1>5. 删除不用的管理员帐号</h1>
+<p><span class="filename">管理页面->工具->管理设置</span><br>
+在管理页面下，打开<strong>工具</strong>菜单，选择<strong>管理设置</strong><br>
+- 检查所有没有使用的管理员帐号并删除。特别注意是否有"Demo"帐号。</p>
+
+<h1>6. 管理员密码安全 </h1>
+<p><strong>一定要使用一定强度、不易猜测的密码。</strong><br>
+<br>
+<span class="error">要修改管理员密码，进入</span>管理页面->工具->管理设置，点击&quot;<strong>重置密码</strong>&quot;按钮。</p>
+<p>建议使用至少8位密码。<br>
+密码最好包含字母、数字、符号、以及大小写等。<br>
+如果使用常见词语，最好使用两个通常不一起使用的词。</p>
+
+<h1>7. 保护管理页面</h1>
+<p>在管理页面工作时需要注意:</p>
+<ul>
+<li> 仅打开一个窗口访问管理页面</li>
+<li> 登录管理页面后不要访问其他网站</li>
+<li> 不用时请登出管理页面</li>
+</ul>
+
+<h1>8. 保护"自定义页面" "html_includes"中的内容 </h1>
+<p>修改<strong>自定义页面</strong>后，(管理页面->工具->页面编辑), 需要保护这些文件:</p>
+<p> A. 用 FTP 软件下载备份，这些文件位于<span class="filename">/includes/languages/schinese/html_includes</span>目录。</p>
+<p> B. 修改文件 CHMOD 644 或 444 (例如: &ldquo;只读&rdquo;)。见上面的 CHMOD 说明<br>
+<span class="filename">/includes/languages/schinese/html_includes</span> &ndash; 下面的所有文件/目录<br>
+<em>(提示: 在&quot;某些&quot;主机，需要设置 645 或者 555 才能显示内容)</em> </p>
+<p>如果设置为只读，那么潜在的黑客即使能访问您的系统也不能修改这些文件。除非他们有修改只读的权限，而这更难做到。<br>
+<br>
+
+<h1>9. 使用 .htaccess 文件来强化安全</h1>
+<p>在几个目录中有<span class="filename"> .htaccess </span>文件，用于防止用户浏览目录，还可以防止直接访问&quot;any&quot; .PHP 脚本，这些目录中的所有 PHP 文件是通过其它 PHP 文件访问，而不是直接通过浏览器。这有利于安全。<br>
+如果删除这些文件，会增加被窥视系统的风险。</p>
+<p>某些目录下还有一些半&quot;空白&quot; <span class="filename">index.html</span> 文件，这些文件用于保护目录，万一FTP软件不能上传.htaccess文件，或您的服务器不接受，可以防止目录浏览，但不会停止执行.PHP文件。这也是&quot;可行&quot;的方法，当然在服务器支持的情况下，在所有目录下使用 <span class="filename">.htaccess</span> 文件更好。</p>
+
+<p>要使用 Zen Cart&reg; 自带的 .htaccess 设置，主机需要包含 'All' 或所有的: 'Limit Options Indexes' 参数到服务器上的 apache/conf/httpd.conf 文件的 AllowOverride 配置中。<br>某些主机不让你使用 OPTIONS 参数，所以需要去掉这行，或者在它前面加上 # 。</p>
+<p>如果主机配置不允许使用 <span class="filename">.htaccess</span> 文件，有时在主机的管理面板中会提供一个界面，用于设定 <span class="filename">.htaccess</span> 的参数。</p>
+
+
+<h1>10. 保护 &quot;images&quot; 及其它目录 </h1>
+During initial installation, you are advised to set your images folder to read/write, so that you can use the Admin interface to upload product/category images without having to use FTP for each one. Similar recommendations are made to other files for various reasons. <br>
+<br>
+However, leaving the images (or any other) folder in read/write mode means that hackers might be able to put malicious files in this (or other) folder(s) and thus create access points from which to attempt nasty exploits. <br>
+<br>
+Thus, once your site is built and your images have been created/loaded, you should drop the security down from read/write to read. ie: change from CHMOD 777 down to 644 for files, and to 755 for folders. <br>
+<br>
+<h4>文件/目录权限设置</h4>
+<p>在 Linux/Unix 主机上，常用的权限安全建议设置为: </p>
+<ul>
+  <li>目录:  755 </li>
+  <li>文件:  644 </li>
+</ul>
+<p>在 Windows 主机上，通常设置文件为只读就可以了。需要检查 <em>Internet Guest Account</em> 帐号被限制为(只读)。</p>
+<h4>目录功能</h4>
+<p>The folders for which installation suggests read-write access for  setup are these. If your site supports .htaccess protection, then you should use it for these folders. (The .htaccess files included with v1.3.9 and newer should already cover the basics.) </p>
+<ul>
+  <li><span class="filename">/cache</span><br>
+    This is used to cache database information. The BEST security protection for this is to move it to a  folder "above" the webroot (public_html or htdocs or www) area, so that it's not accessible via a browser. (Requires changes to DIR_FS_SQL_CACHE setting in both configure.php files as well as the setting in your admin for Admin &gt; Configuration &gt; Sessions &gt; Session Directory.)</li>
+  <li><span class="filename">/images</span><br>
+    本文前面有说明。</li>
+  <li><span class="filename">/includes/languages/english/html_includes</span><br>
+    本文前面有说明。</li>
+  <li><span class="filename">/logs</span><br>
+    This is used to store error logs. The BEST security protection for this is to move it to a  folder "above" the webroot (public_html or htdocs or www) area, so that it's not  accessible via a browser. (Requires changes to DIR_FS_LOGS setting in both configure.php files.)</li>
+  <li><span class="filename">/media</span><br>
+    This is only suggested read-write for the sake of  being able to upload music-product media files via the admin. Could be  done by FTP as an alternative. </li>
+  <li><span class="filename">/pub</span><br>
+    This is used on Linux/Unix hosts to have downloadable products made available to customers via a secure delivery method which  doesn't disclose the 'real' location of files/data on your server (so that people can't share a URL and have their friends steal downloads from your site) </li>
+  <li><span class="filename">/admin/backups</span><br>
+    备份模块用于保存数据库备份，可选。</li>
+  <li><span class="filename">/admin/images/graphs</span><br>
+    This is used by the Admin &gt; Tools &gt; Banner Manager for updating/displaying bar graphs related to banner usage. If not writable, this feature is ignored. <br>
+</li>
+</ul>
+<h1>11. 从浏览器头删除网址</h1>
+<p>To stop the browser from printing a URL (which discloses your Admin foldername) on the invoice or any other document on the web, follow these steps:</p>
+<p>针对 Internet Explorer:<br>
+o 点击 File 然后 Page Setup <br>
+o At page setup, remove this two character combination: &quot;&amp;u&quot; from the header or footer text box. </p>
+<p>针对 Firefox:<br>
+o 点击 <em>File</em> 然后 <em>Page Setup<br>
+o </em>On page setup window click on the tab "Margins &amp;  Header/Footer". In the "Header &amp; Footer" section set all of the  drop downs to --blank--. (Or at least remove all references to &quot;Title&quot; and &quot;URL&quot;.)</p>
+
+<h1>12. 需要经常检查的项目</h1>
+<ol><li>Be sure you've done all the steps listed in this document</li>
+<li>Keep good backups of your website files and database (frequently)<ul>
+<li>Backup the database over a secure connection (ie: if you're using phpMyAdmin to backup, then make sure you're using HTTPS addresses in your URLs).</li>
+<li>Backup the website files over a secure connection (If you're copying files via FTP, be sure to use SECURE-FTP <a href="http://en.wikipedia.org/wiki/FTPS" target="_blank">FTP over SSL/TLS</a>). A good tool that supports Secure FTP (SFTP) is WinSCP, provided you configure your connection in it accordingly.)</li>
+<li>Store the backed up database and website files into an encrypted file. (You should NOT keep your backups on your server. But if you do, encrypt them securely. See your hosting company for advice.)</li></ul></li>
+<li>Check your server's errorlog regularly for odd or suspicious activity  (Your hosting control panel should give you access to the Apache error_log)<ul>
+<li>look for any links that went to a page that isn't in your site
+<li>look for links that have http after the index.php </li></ul>
+<li>Check your website files regularly to be sure nothing's been added or altered
+<li>Ask your webhost what they have done to be sure the server you're on is safe and secure so that outsiders cannot do any harm, and so that other websites on your server cannot be used to get to your site and cause any harm (in case they have security holes in them)
+<li>If your business warrants, or you still want additional assurance (esp if running forum software on your site, or other scripts outside of Zen Cart&reg;), hire a security consultant to check your site regularly and give you peace of mind in exchange for a few dollars </li>
+<li>Check your Zen Cart /cache/ folder for leftover files that don't belong there.</li>
+<li>Check your Zen Cart /logs/ folder for myDebug-XXXXX.log files to see whether any errors are happening which need to be fixed. Delete the log files after you've addressed the errors.</li>
+</ol><br>
+</fieldset>
+
+<p class="center"><em>版权所有 2004 - 2015 Zen Cart 中文版 www.zen-cart.cn</em></p>
+</body>
+</html>

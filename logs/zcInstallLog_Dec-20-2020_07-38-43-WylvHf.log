@@ -1,0 +1,56 @@
+---------------
+Dec 20 2020 7:38 -- inspect
+CURL有问题:  0 => 
+
+---------------
+Dec 20 2020 7:38 -- inspect
+System Inspection Results: 
+------------------------------
+WARN: Zen Cart 版本: => 有新版本 v1.5.7b :: Modernized Version (Patch)
+<a href="https://www.zen-cart.com/showthread.php?226873-Zen-Cart-v1-5-7b-released!
+" target="_blank">下载地址</a>
+NA: 服务器 => Apache/2.4.27 (Win32) OpenSSL/1.0.2l PHP/7.1.8
+NA: HTTP主机 => fecshop
+NA: 转换路径 => G:/web/fecshop/zc_install/index.php(SCRIPT_FILENAME)
+NA: 真实路径 => G:\web\fecshop
+NA: PHP O/S => WINNT
+NA: PHP API模式 => apache2handler
+NA: PHP页面最大执行时间 => 30
+OK: MySQL支持 => ON
+WARN: PHP版本 => 7.1.8
+OK: PHP Sessions 支持 => ON
+OK: PHP Session.AutoStart => OFF
+OK: PHP session.use_trans_sid => OFF
+OK: 建议SQL缓存目录 => G:/web/fecshop/cache
+OK: PHP GD 支持 => ON
+OK: GD Version => GD bundled (2.1.0 compatible)
+OK: PHP ZLIB 压缩支持 => ON
+OK: PHP OpenSSL 支持 => ON
+OK: PHP cURL 支持 => ON
+WARN: CURL 非SSL功能 => CURL有问题:  0 => 
+OK: CURL SSL功能 => Okay
+OK: PHP 上传支持 => ON  upload_max_filesize=100M;  post_max_size=100M
+OK: PHP 上传临时目录 => D:\xampp\tmp
+OK: Apache .htaccess 支持 => ON
+NA: PHP include_path => .;D:\xampp\php\PEAR
+NA: PHP SMTP 目标 => localhost
+NA: PHP sendmail 路径 => 
+NA: PHP sendmail 发件人 => 
+OK: PHP open_basedir 限制 => 
+OK: PHP 输出缓存 (gzip) => ON
+OK: PHP XML 支持 => ON
+OK: PHP Session.Save_Path => G:\web\fecshop\cache-->可写
+OK: includes/configure.php =>  可写
+OK: admin/includes/configure.php =>  可写
+OK: cache => OK 777 read/write/execute
+OK: images => OK 777 read/write/execute (INCLUDE SUBDIRECTORIES TOO)
+OK: includes/languages/english/html_includes => OK 777 read/write (INCLUDE SUBDIRECTORIES TOO)
+OK: logs => OK 777 read/write/execute
+OK: media => OK 777 read/write/execute
+OK: pub => OK 777 read/write/execute
+OK: admin/backups => OK 777 read/write
+OK: admin/images/graphs => OK 777 read/write/execute
+PHP Extensions compiled: Core, bcmath, calendar, ctype, date, filter, hash, iconv, json, mcrypt, SPL, pcre, readline, Reflection, session, standard, mysqlnd, tokenizer, zip, zlib, libxml, dom, PDO, bz2, SimpleXML, xml, wddx, xmlreader, xmlwriter, apache2handler, openssl, curl, fileinfo, gd, gettext, gmp, mbstring, exif, mysqli, pdo_mysql, pdo_sqlite, Phar, ftp
+------------------------------
+
+
