@@ -1,104 +1,125 @@
 <?php
-
 /**
- * ECSHOP 货到付款插件
- * ============================================================================
- * * 版权所有 2005-2018 上海商派网络科技有限公司，并保留所有权利。
- * 网站地址: http://www.ecshop.com；
- * ----------------------------------------------------------------------------
- * 这不是一个自由软件！您只能在不用于商业目的的前提下对程序代码进行修改和
- * 使用；不允许对程序代码以任何形式任何目的的再发布。
- * ============================================================================
- * $Author: liubo $
- * $Id: cod.php 17217 2011-01-19 06:29:08Z liubo $
+ * COD Payment Module
+ *
+ * @package paymentMethod
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
+ * @copyright Portions Copyright 2003 osCommerce
+ * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
+ * @version GIT: $Id: Author: DrByte  Tue Jan 22 03:36:04 2013 -0500 Modified in v1.5.2 $
  */
+  class cod {
+    var $code, $title, $description, $enabled;
 
-if (!defined('IN_ECS'))
-{
-    die('Hacking attempt');
-}
+// class constructor
+    function cod() {
+      global $order;
 
-$payment_lang = ROOT_PATH . 'languages/' .$GLOBALS['_CFG']['lang']. '/payment/cod.php';
+      $this->code = 'cod';
+      $this->title = MODULE_PAYMENT_COD_TEXT_TITLE;
+      $this->description = MODULE_PAYMENT_COD_TEXT_DESCRIPTION;
+      $this->sort_order = MODULE_PAYMENT_COD_SORT_ORDER;
+      $this->enabled = ((MODULE_PAYMENT_COD_STATUS == 'True') ? true : false);
 
-if (file_exists($payment_lang))
-{
-    global $_LANG;
+      if ((int)MODULE_PAYMENT_COD_ORDER_STATUS_ID > 0) {
+        $this->order_status = MODULE_PAYMENT_COD_ORDER_STATUS_ID;
+      }
 
-    include_once($payment_lang);
-}
-
-/* 模块的基本信息 */
-if (isset($set_modules) && $set_modules == TRUE)
-{
-    $i = isset($modules) ? count($modules) : 0;
-
-    /* 代码 */
-    $modules[$i]['code']    = basename(__FILE__, '.php');
-
-    /* 描述对应的语言项 */
-    $modules[$i]['desc']    = 'cod_desc';
-
-    /* 是否支持货到付款 */
-    $modules[$i]['is_cod']  = '1';
-
-    /* 是否支持在线支付 */
-    $modules[$i]['is_online']  = '0';
-
-    /* 支付费用，由配送决定 */
-    $modules[$i]['pay_fee'] = '0';
-
-    /* 作者 */
-    $modules[$i]['author']  = 'ECSHOP TEAM';
-
-    /* 网址 */
-    $modules[$i]['website'] = 'http://www.ecshop.com';
-
-    /* 版本号 */
-    $modules[$i]['version'] = '1.0.0';
-
-    /* 配置信息 */
-    $modules[$i]['config']  = array();
-
-    return;
-}
-
-/**
- * 类
- */
-class cod
-{
-    function __construct()
-    {
-        $this->cod();
+      if (is_object($order)) $this->update_status();
     }
 
-    /**
-     * 构造函数
-     *
-     * @access  public
-     * @param
-     *
-     * @return void
-     */
-    function cod()
-    {
+// class methods
+    function update_status() {
+      global $order, $db;
+
+      if ($this->enabled && (int)MODULE_PAYMENT_COD_ZONE > 0 && isset($order->billing['country']['id'])) {
+        $check_flag = false;
+        $check = $db->Execute("select zone_id from " . TABLE_ZONES_TO_GEO_ZONES . " where geo_zone_id = '" . MODULE_PAYMENT_COD_ZONE . "' and zone_country_id = '" . $order->delivery['country']['id'] . "' order by zone_id");
+        while (!$check->EOF) {
+          if ($check->fields['zone_id'] < 1) {
+            $check_flag = true;
+            break;
+          } elseif ($check->fields['zone_id'] == $order->delivery['zone_id']) {
+            $check_flag = true;
+            break;
+          }
+          $check->MoveNext();
+        }
+
+        if ($check_flag == false) {
+          $this->enabled = false;
+        }
+      }
+
+// disable the module if the order only contains virtual products
+      if ($this->enabled == true) {
+        if ($order->content_type != 'physical') {
+          $this->enabled = false;
+        }
+      }
     }
 
-    /**
-     * 提交函数
-     */
-    function get_code()
-    {
-        return '';
+    function javascript_validation() {
+      return false;
     }
 
-    /**
-     * 处理函数
-     */
-    function response()
-    {
-        return;
+    function selection() {
+      return array('id' => $this->code,
+                   'module' => $this->title);
     }
-}
 
-?>
+    function pre_confirmation_check() {
+      return false;
+    }
+
+    function confirmation() {
+      return false;
+    }
+
+    function process_button() {
+      return false;
+    }
+
+    function before_process() {
+      return false;
+    }
+
+    function after_process() {
+      return false;
+    }
+
+    function get_error() {
+      return false;
+    }
+
+    function check() {
+      global $db;
+      if (!isset($this->_check)) {
+        $check_query = $db->Execute("select configuration_value from " . TABLE_CONFIGURATION . " where configuration_key = 'MODULE_PAYMENT_COD_STATUS'");
+        $this->_check = $check_query->RecordCount();
+      }
+      return $this->_check;
+    }
+
+    function install() {
+      global $db, $messageStack;
+      if (defined('MODULE_PAYMENT_COD_STATUS')) {
+        $messageStack->add_session('COD module already installed.', 'error');
+        zen_redirect(zen_href_link(FILENAME_MODULES, 'set=payment&module=cod', 'NONSSL'));
+        return 'failed';
+      }
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) values ('打开现金付款方式', 'MODULE_PAYMENT_COD_STATUS', 'True', '您要使用现金付款方式吗? 提示: 送货上门时收取货款。', '6', '1', 'zen_cfg_select_option(array(\'True\', \'False\'), ', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, use_function, set_function, date_added) values ('付款地区', 'MODULE_PAYMENT_COD_ZONE', '0', '如果选择了付款地区，仅该地区可以使用该支付模块。', '6', '2', 'zen_get_zone_class_title', 'zen_cfg_pull_down_zone_classes(', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('显示顺序', 'MODULE_PAYMENT_COD_SORT_ORDER', '0', '显示顺序：小的显示在前。', '6', '0', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, use_function, date_added) values ('设置订单状态', 'MODULE_PAYMENT_COD_ORDER_STATUS_ID', '0', '设置通过该支付方式付款的订单状态', '6', '0', 'zen_cfg_pull_down_order_statuses(', 'zen_get_order_status_name', now())");
+   }
+
+    function remove() {
+      global $db;
+      $db->Execute("delete from " . TABLE_CONFIGURATION . " where configuration_key in ('" . implode("', '", $this->keys()) . "')");
+    }
+
+    function keys() {
+      return array('MODULE_PAYMENT_COD_STATUS', 'MODULE_PAYMENT_COD_ZONE', 'MODULE_PAYMENT_COD_ORDER_STATUS_ID', 'MODULE_PAYMENT_COD_SORT_ORDER');
+    }
+  }

@@ -1,130 +1,97 @@
 <?php
-
 /**
- * ECSHOP 市内快递插件
- * ============================================================================
- * * 版权所有 2005-2018 上海商派网络科技有限公司，并保留所有权利。
- * 网站地址: http://www.ecshop.com；
- * ----------------------------------------------------------------------------
- * 这不是一个自由软件！您只能在不用于商业目的的前提下对程序代码进行修改和
- * 使用；不允许对程序代码以任何形式任何目的的再发布。
- * ============================================================================
- * $Author: liubo $
- * $Id: flat.php 17217 2011-01-19 06:29:08Z liubo $
+ * @package shippingMethod
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
+ * @copyright Portions Copyright 2003 osCommerce
+ * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  */
+// $Id: flat.php 14498 2009-10-01 20:16:16Z ajeh $
+//
 
-if (!defined('IN_ECS'))
-{
-    die('Hacking attempt');
-}
+  class flat {
+    var $code, $title, $description, $icon, $enabled;
 
-$shipping_lang = ROOT_PATH.'languages/' .$GLOBALS['_CFG']['lang']. '/shipping/flat.php';
-if (file_exists($shipping_lang))
-{
-    global $_LANG;
-    include_once($shipping_lang);
-}
+// class constructor
+    function flat() {
+      global $order, $db;
 
-/* 模块的基本信息 */
-if (isset($set_modules) && $set_modules == TRUE)
-{
-    $i = (isset($modules)) ? count($modules) : 0;
+      $this->code = 'flat';
+      $this->title = MODULE_SHIPPING_FLAT_TEXT_TITLE;
+      $this->description = MODULE_SHIPPING_FLAT_TEXT_DESCRIPTION;
+      $this->sort_order = MODULE_SHIPPING_FLAT_SORT_ORDER;
+      $this->icon = '';
+      $this->tax_class = MODULE_SHIPPING_FLAT_TAX_CLASS;
+      $this->tax_basis = MODULE_SHIPPING_FLAT_TAX_BASIS;
 
-    /* 配送方式插件的代码必须和文件名保持一致 */
-    $modules[$i]['code']    = basename(__FILE__, '.php');
+      // disable only when entire cart is free shipping
+      if (zen_get_shipping_enabled($this->code)) {
+        $this->enabled = ((MODULE_SHIPPING_FLAT_STATUS == 'True') ? true : false);
+      }
 
-    $modules[$i]['version'] = '1.0.0';
-
-    /* 配送方式的描述 */
-    $modules[$i]['desc']    = 'flat_desc';
-
-    /* 配送方式是否支持货到付款 */
-    $modules[$i]['cod']     = TRUE;
-
-    /* 插件的作者 */
-    $modules[$i]['author']  = 'ECSHOP TEAM';
-
-    /* 插件作者的官方网站 */
-    $modules[$i]['website'] = 'http://www.ecshop.com';
-
-    /* 配送接口需要的参数 */
-    $modules[$i]['configure'] = array(
-                                    array('name' => 'base_fee', 'value' => 10),
-                                );
-
-    /* 模式编辑器 */
-    $modules[$i]['print_model'] = 2;
-
-    /* 打印单背景 */
-    $modules[$i]['print_bg'] = '';
-
-   /* 打印快递单标签位置信息 */
-    $modules[$i]['config_lable'] = '';
-
-    return;
-}
-
-class flat
-{
-    /*------------------------------------------------------ */
-    //-- PUBLIC ATTRIBUTEs
-    /*------------------------------------------------------ */
-
-    /**
-     * 配置信息
-     */
-    var $configure;
-
-    /*------------------------------------------------------ */
-    //-- PUBLIC METHODs
-    /*------------------------------------------------------ */
-
-    /**
-     * 构造函数
-     *
-     * @param: $configure[array]    配送方式的参数的数组
-     *
-     * @return null
-     */
-    function __construct($cfg = array())
-    {
-        foreach ($cfg AS $key => $val)
-        {
-            $this->configure[$val['name']] = $val['value'];
+      if ( ($this->enabled == true) && ((int)MODULE_SHIPPING_FLAT_ZONE > 0) ) {
+        $check_flag = false;
+        $check = $db->Execute("select zone_id from " . TABLE_ZONES_TO_GEO_ZONES . " where geo_zone_id = '" . MODULE_SHIPPING_FLAT_ZONE . "' and zone_country_id = '" . $order->delivery['country']['id'] . "' order by zone_id");
+        while (!$check->EOF) {
+          if ($check->fields['zone_id'] < 1) {
+            $check_flag = true;
+            break;
+          } elseif ($check->fields['zone_id'] == $order->delivery['zone_id']) {
+            $check_flag = true;
+            break;
+          }
+          $check->MoveNext();
         }
+
+        if ($check_flag == false) {
+          $this->enabled = false;
+        }
+      }
     }
 
-    /**
-     * 计算订单的配送费用的函数
-     *
-     * @param   float   $goods_weight   商品重量
-     * @param   float   $goods_amount   商品金额
-     * @return  decimal
-     */
-    function calculate($goods_weight, $goods_amount)
-    {
-        if ($this->configure['free_money'] > 0 && $goods_amount >= $this->configure['free_money'])
-        {
-            return 0;
-        }
-        else
-        {
-            return isset($this->configure['base_fee']) ? $this->configure['base_fee'] : 0;
-        }
+// class methods
+    function quote($method = '') {
+      global $order;
+
+      $this->quotes = array('id' => $this->code,
+                            'module' => MODULE_SHIPPING_FLAT_TEXT_TITLE,
+                            'methods' => array(array('id' => $this->code,
+                                                     'title' => MODULE_SHIPPING_FLAT_TEXT_WAY,
+                                                     'cost' => MODULE_SHIPPING_FLAT_COST)));
+      if ($this->tax_class > 0) {
+        $this->quotes['tax'] = zen_get_tax_rate($this->tax_class, $order->delivery['country']['id'], $order->delivery['zone_id']);
+      }
+
+      if (zen_not_null($this->icon)) $this->quotes['icon'] = zen_image($this->icon, $this->title);
+
+      return $this->quotes;
     }
 
-    /**
-     * 查询发货状态
-     * 该配送方式不支持查询发货状态
-     *
-     * @access  public
-     * @param   string  $invoice_sn     发货单号
-     * @return  string
-     */
-    function query($invoice_sn)
-    {
-        return $invoice_sn;
+    function check() {
+      global $db;
+      if (!isset($this->_check)) {
+        $check_query = $db->Execute("select configuration_value from " . TABLE_CONFIGURATION . " where configuration_key = 'MODULE_SHIPPING_FLAT_STATUS'");
+        $this->_check = $check_query->RecordCount();
+      }
+      return $this->_check;
     }
-}
 
+    function install() {
+      global $db;
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) values ('打开固定运费模块', 'MODULE_SHIPPING_FLAT_STATUS', 'True', '您是否要采用固定运费方式?', '6', '0', 'zen_cfg_select_option(array(\'True\', \'False\'), ', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('运费成本', 'MODULE_SHIPPING_FLAT_COST', '5.00', '使用该配送方式的订单的成本运费', '6', '0', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, use_function, set_function, date_added) values ('税率种类', 'MODULE_SHIPPING_FLAT_TAX_CLASS', '0', '计算运费使用的税率种类。', '6', '0', 'zen_get_tax_class_title', 'zen_cfg_pull_down_tax_classes(', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, set_function, date_added) values ('税率基准', 'MODULE_SHIPPING_FLAT_TAX_BASIS', 'Shipping', '计算运费税的基准。选项为<br />Shipping - 基于客户的交货人地址<br />Billing - 基于客户的帐单地址<br />Store - 如果帐单地址/送货地区和商店地区相同，则基于商店地址', '6', '0', 'zen_cfg_select_option(array(\'Shipping\', \'Billing\', \'Store\'), ', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, use_function, set_function, date_added) values ('送货地区', 'MODULE_SHIPPING_FLAT_ZONE', '0', '如果选择了地区，仅该地区采用该配送方式。', '6', '0', 'zen_get_zone_class_title', 'zen_cfg_pull_down_zone_classes(', now())");
+      $db->Execute("insert into " . TABLE_CONFIGURATION . " (configuration_title, configuration_key, configuration_value, configuration_description, configuration_group_id, sort_order, date_added) values ('排序顺序', 'MODULE_SHIPPING_FLAT_SORT_ORDER', '0', '显示的顺序。', '6', '0', now())");
+    }
+
+    function remove() {
+      global $db;
+      $db->Execute("delete from " . TABLE_CONFIGURATION . " where configuration_key like 'MODULE\_SHIPPING\_FLAT\_%'");
+    }
+
+    function keys() {
+      return array('MODULE_SHIPPING_FLAT_STATUS', 'MODULE_SHIPPING_FLAT_COST', 'MODULE_SHIPPING_FLAT_TAX_CLASS', 'MODULE_SHIPPING_FLAT_TAX_BASIS', 'MODULE_SHIPPING_FLAT_ZONE', 'MODULE_SHIPPING_FLAT_SORT_ORDER');
+    }
+  }
 ?>
